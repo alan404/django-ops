@@ -16,7 +16,7 @@ urlpatterns = [
     path('day-log/<name>/archive/', log_views.DayLogArchiveView.as_view(), name="day-log-archive"),
     # for redis
     path('redis/group/', redis_views.RedisGroupView.as_view(), name="redis-group"),
-    path('redis/info/',  redis_views.info, name="redis-info"),
+    path('redis/info/',  redis_views.InfoView.as_view(), name="redis-info"),
     path('redis/flush-cache/',  redis_views.FlushCacheView.as_view(), name="redis-flush-cache"),
     path('redis/flush-queue/',  redis_views.FlushQueueView.as_view(), name="redis-flush-queue"),
 ]

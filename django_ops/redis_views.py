@@ -3,12 +3,12 @@ import logging
 from collections import OrderedDict
 
 from django.conf import settings
-from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import NotFound
 from rest_framework.exceptions import ValidationError
-from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from .mixins import DefaultAuthMixin
 
 logger = logging.getLogger(__name__)
 
@@ -42,8 +42,7 @@ def get_redis_cache():
         return connection
 
 
-class RedisGroupView(APIView):
-    permission_classes = (IsAdminUser,)
+class RedisGroupView(DefaultAuthMixin, APIView):
 
     def get(self, request):
         connection, prefix = get_redis_queue()
@@ -63,25 +62,24 @@ class RedisGroupView(APIView):
         return Response(ret)
 
 
-@api_view(["GET"])
-@permission_classes([IsAdminUser])
-def info(request):
-    queue_redis, _ = get_redis_queue()
-    cache_redis = get_redis_cache()
-    ret = OrderedDict()
-    ret["QUEUE_SIZE"] = queue_redis.dbsize()
-    if cache_redis:
-        ret["CACHE_SIZE"] = cache_redis.dbsize()
-        v = cache_redis.info()
-        ret["REDIS"] = OrderedDict()
-        for key in sorted(v):
-            # if str(key).startswith("db"):
-            ret["REDIS"][key] = v[key]
-    return Response(ret)
+class InfoView(DefaultAuthMixin, APIView):
+
+    def get(self, request):
+        queue_redis, _ = get_redis_queue()
+        cache_redis = get_redis_cache()
+        ret = OrderedDict()
+        ret["QUEUE_SIZE"] = queue_redis.dbsize()
+        if cache_redis:
+            ret["CACHE_SIZE"] = cache_redis.dbsize()
+            v = cache_redis.info()
+            ret["REDIS"] = OrderedDict()
+            for key in sorted(v):
+                # if str(key).startswith("db"):
+                ret["REDIS"][key] = v[key]
+        return Response(ret)
 
 
-class FlushCacheView(APIView):
-    permission_classes = (IsAdminUser, )
+class FlushCacheView(DefaultAuthMixin, APIView):
 
     def get(self, request):
         cache_redis = get_redis_cache()
@@ -102,8 +100,7 @@ class FlushCacheView(APIView):
         return Response(ret)
 
 
-class FlushQueueView(APIView):
-    permission_classes = (IsAdminUser, )
+class FlushQueueView(DefaultAuthMixin, APIView):
 
     def get(self, request):
         queue_redis, _ = get_redis_queue()

@@ -10,20 +10,19 @@ from django.http.response import HttpResponse
 from django.urls import reverse
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.generics import ListAPIView
-from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.views import APIView
 
 from . import serializers
+from .mixins import DefaultAuthMixin
 
 LOG_DIR = os.path.join(settings.BASE_DIR, "logs")
 ZIP_DIR = os.path.join(LOG_DIR, "zip")
 logger = logging.getLogger(__name__)
 
 
-class LogView(ListAPIView):
-    permission_classes = (IsAdminUser,)
+class LogView(DefaultAuthMixin, ListAPIView):
     serializer_class = serializers.DayLogSerial
     pagination_class = None
     filter_backends = ()
@@ -57,8 +56,7 @@ class LogView(ListAPIView):
         return final_ret
 
 
-class LogPreviewView(APIView):
-    permission_classes = (IsAdminUser,)
+class LogPreviewView(DefaultAuthMixin, APIView):
 
     def get(self, request, name):
         file_path = os.path.join(LOG_DIR, name)
@@ -79,8 +77,7 @@ class LogPreviewView(APIView):
         return Response(output)
 
 
-class BaseArchiveView(APIView):
-    permission_classes = (IsAdminUser,)
+class BaseArchiveView(DefaultAuthMixin, APIView):
 
     def get_file_list(self, name):
         raise NotImplemented()
@@ -132,12 +129,11 @@ class DayLogArchiveView(BaseArchiveView):
         return day_logs
 
 
-class ZipDownloadView(APIView):
+class ZipDownloadView(DefaultAuthMixin, APIView):
     """
     WARNING:
     Only download ONE file at the same time to avoid blocking all connection!!!
     """
-    permission_classes = (IsAdminUser,)
 
     def get(self, request, name):
         zip_path = os.path.join(ZIP_DIR, "{}.zip".format(name))

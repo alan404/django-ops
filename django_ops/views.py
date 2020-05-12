@@ -8,13 +8,13 @@ from datetime import datetime
 import django
 import psutil
 from django.conf import settings
-from rest_framework import permissions
+from django.urls.exceptions import NoReverseMatch
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.views import APIView
-from django.urls.exceptions import NoReverseMatch
 
 from . import utilities, migration_util
+from .mixins import DefaultAuthMixin
 
 logger = logging.getLogger(__name__)
 
@@ -46,8 +46,7 @@ class PingView(APIView):
         return Response(ret)
 
 
-class InfoView(APIView):
-    permission_classes = (permissions.IsAdminUser,)
+class InfoView(DefaultAuthMixin, APIView):
 
     def get(self, request):
 
@@ -88,8 +87,7 @@ class InfoView(APIView):
         return Response(resp)
 
 
-class MigrationView(APIView):
-    permission_classes = (permissions.IsAdminUser,)
+class MigrationView(DefaultAuthMixin, APIView):
 
     def get(self, request):
         ret = OrderedDict()
@@ -98,8 +96,7 @@ class MigrationView(APIView):
         return Response(ret)
 
 
-class RequestView(APIView):
-    permission_classes = (permissions.IsAdminUser,)
+class RequestView(DefaultAuthMixin, APIView):
 
     def get(self, request):
         ret = OrderedDict()
